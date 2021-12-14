@@ -1,50 +1,42 @@
-import React, { Component } from "react"
-import logo from "./logo.svg"
-import "./App.css"
+import React, { useState } from 'react';
+//mock data
+import data from "./data.json";
+//components
+import Header from "./Header";
+import ToDoList from "./ToDoList";
+import ToDoForm from './ToDoForm';
 
-class LambdaDemo extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { loading: false, msg: null }
+function App() {
+  
+  const [ toDoList, setToDoList ] = useState(data);
+
+  const handleToggle = (id) => {
+    let mapped = toDoList.map(task => {
+      return task.id === Number(id) ? { ...task, complete: !task.complete } : { ...task};
+    });
+    setToDoList(mapped);
   }
 
-  handleClick = api => e => {
-    e.preventDefault()
-
-    this.setState({ loading: true })
-    fetch("/.netlify/functions/" + api)
-      .then(response => response.json())
-      .then(json => this.setState({ loading: false, msg: json.msg }))
+  const handleFilter = () => {
+    let filtered = toDoList.filter(task => {
+      return !task.complete;
+    });
+    setToDoList(filtered);
   }
 
-  render() {
-    const { loading, msg } = this.state
-
-    return (
-      <p>
-        <button onClick={this.handleClick("hello")}>{loading ? "Loading..." : "Call Lambda"}</button>
-        <button onClick={this.handleClick("async-dadjoke")}>{loading ? "Loading..." : "Call Async Lambda"}</button>
-        <br />
-        <span>{msg}</span>
-      </p>
-    )
+  const addTask = (userInput ) => {
+    let copy = [...toDoList];
+    copy = [...copy, { id: toDoList.length + 1, task: userInput, complete: false }];
+    setToDoList(copy);
   }
+
+  return (
+    <div className="App">
+      <Header />
+      <ToDoList toDoList={toDoList} handleToggle={handleToggle} handleFilter={handleFilter}/>
+      <ToDoForm addTask={addTask}/>
+    </div>
+  );
 }
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <LambdaDemo />
-        </header>
-      </div>
-    )
-  }
-}
-
-export default App
+export default App;
